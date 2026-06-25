@@ -4,11 +4,14 @@ bigint::bigint():buf("0"){}
 
 bigint::bigint(int n)
 {
+    long l = n;
+    if (l < 0) l = -l;
     std:: stringstream ss;
-    ss << n;
-    buf = ss.str();
-}
+    ss << l;
 
+    buf = ss.str();
+    std::cout <<"buf : " << buf << std::endl;
+}
 bigint:: bigint(const bigint &other): buf(other.buf){}
 
 bigint& bigint::operator=(const bigint& other)

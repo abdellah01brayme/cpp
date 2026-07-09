@@ -1,6 +1,6 @@
 #include "array_bag.hpp"
 #include <iostream>
-
+#define nullptr NULL
 array_bag::array_bag() {
 	size = 0;
 	data = NULL;

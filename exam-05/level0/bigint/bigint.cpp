@@ -165,14 +165,8 @@ bool bigint::operator>(const bigint &other) const
         return true;
     else if (this->buf.length() < other.buf.length())
         return false;
-    for (int i = 0; i < this->buf.length(); i++)
-    {
-        if (this->buf[i] > other.buf[i])
-            return (true);
-        if (this->buf[i] < other.buf[i])
-            return false;
-    }
-    return false;
+    
+    return this->buf > other.buf;
 }
 bool bigint::operator>=(const bigint &other) const
 {

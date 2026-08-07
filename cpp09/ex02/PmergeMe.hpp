@@ -24,6 +24,8 @@ struct CompareFirst {
 void parser(std::vector<uint> &v, char **av, int ac);
 // void listDeque(std::deque<uint> &d, std::vector<uint> &v);
 
+void createPair(deque_pair_t &list_pair, std::deque<uint> &list);
+void createPair(vect_pair_t &list_pair, std::vector<uint> &list);
 // algorithm
 void mergeInsert(std::vector<uint> &v);
 void print(std::vector<uint> &v);

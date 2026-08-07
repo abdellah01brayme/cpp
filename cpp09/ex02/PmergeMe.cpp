@@ -37,22 +37,24 @@ void parser(std::vector<uint> &v, char **av, int ac)
         throw std::runtime_error("Error: no numbers provided." );
 }
 
-void print(std::deque<uint> &v)
+void print(std::deque<uint> &list)
 {
-    for (std::deque<uint>::iterator it = v.begin(); it != v.end(); ++it)
+    for (std::deque<uint>::iterator it = list.begin(); it != list.end(); ++it)
         std::cout << "  " << *it;
     std::cout << "\n";
 }
 
-static void createPair(deque_pair_t &v, deque_pair_t &list_pair)
+
+void createPair(deque_pair_t &list_pair, std::deque<uint> &list)
 {
-    for (deque_pair_t::iterator it = v.begin(); it != v.end() && it + 1 != v.end() ; it += 2)
-    {
-        uint a = (*it).first;
-        uint b = (*(it + 1)).first;
-        pair_t p(std::max(a, b), std::min(a, b));
-        list_pair.push_back(p);
-    }
+    for (std::deque<uint>::iterator it = list.begin(); it != list.end(); ++it)
+        list_pair.push_back(pair_t(*it, 0));
+}
+
+static void createPair(deque_pair_t &list_pair, deque_pair_t &list)
+{
+    for (deque_pair_t::iterator it = list.begin(); it != list.end() && it + 1 != list.end() ; it += 2)
+        list_pair.push_back(pair_t(std::max((*it).first, (*(it + 1)).first), std::min((*it).first, (*(it + 1)).first)));
 }
 
 static void creatJacobsthal(std::deque<uint> &v, uint len)
@@ -116,7 +118,7 @@ static void recursionMergeInsert(deque_pair_t &dst_list, deque_pair_t &src_list)
 {
     deque_pair_t list_pair;
 
-    createPair(src_list, list_pair);
+    createPair(list_pair, src_list);
     if (list_pair.size() > 1)
         recursionMergeInsert(dst_list, list_pair);
     else
@@ -159,15 +161,16 @@ void print(std::vector<uint> &v)
     std::cout << "\n";
 }
 
-static void createPair(vect_pair_t &v, vect_pair_t &list_pair)
+void createPair(vect_pair_t &list_pair, std::vector<uint> &list)
+{
+    for (std::vector<uint>::iterator it = list.begin(); it != list.end(); ++it)
+        list_pair.push_back(pair_t(*it, 0));
+}
+
+static void createPair(vect_pair_t &list_pair, vect_pair_t &v)
 {
     for (vect_pair_t::iterator it = v.begin(); it != v.end() && it + 1 != v.end() ; it += 2)
-    {
-        uint a = (*it).first;
-        uint b = (*(it + 1)).first;
-        pair_t p(std::max(a, b), std::min(a, b));
-        list_pair.push_back(p);
-    }
+        list_pair.push_back(pair_t(std::max((*it).first, (*(it + 1)).first), std::min((*it).first, (*(it + 1)).first)));
 }
 
 static void creatJacobsthal(std::vector<uint> &v, uint len)
@@ -198,7 +201,6 @@ static pair_t findPair(vect_pair_t &v, uint first)
     return pair;
 }
 
-
 static vect_pair_t::iterator changeSecondPair(vect_pair_t &dst_list, vect_pair_t &src_list, uint first_pair)
 {
     vect_pair_t::iterator it ;
@@ -207,7 +209,8 @@ static vect_pair_t::iterator changeSecondPair(vect_pair_t &dst_list, vect_pair_t
     return it;
 }
 
-static vect_pair_t::iterator addPair(vect_pair_t &dst_list, vect_pair_t &src_list, pair_t pair, bool change_second = false)
+static vect_pair_t::iterator addPair(vect_pair_t &dst_list, vect_pair_t &src_list, pair_t pair,\
+     bool change_second = false)
 {
     vect_pair_t::iterator it_end;
     vect_pair_t::iterator it;
@@ -223,7 +226,7 @@ static void recursionMergeInsert(vect_pair_t &dst_list, vect_pair_t &src_list)
 {
     vect_pair_t list_pair;
 
-    createPair(src_list, list_pair);
+    createPair(list_pair, src_list);
     if (list_pair.size() > 1)
         recursionMergeInsert(dst_list, list_pair);
     else
@@ -238,7 +241,10 @@ static void recursionMergeInsert(vect_pair_t &dst_list, vect_pair_t &src_list)
     std::vector <uint> jacobsthal;
     creatJacobsthal(jacobsthal, list_pair.size());
     for (uint i = 0; i < list_pair.size(); i++)
-        addPair(dst_list, src_list, list_pair[jacobsthal[i]], true);
+    {
+        std :: cout << "add " << list_pair[jacobsthal[i]].second << "  added " ;
+        std:: cout << (*addPair(dst_list, src_list, list_pair[jacobsthal[i]], true)).first <<std::endl;
+    }
     if (src_list.size())
         addPair(dst_list, src_list, reversePair(src_list.front()));
 }
@@ -250,8 +256,7 @@ void mergeInsert(std::vector<uint> &list)
         return ;
     vect_pair_t list_pair;
     vect_pair_t result;
-    for (std::vector<uint>::iterator it = list.begin(); it != list.end(); ++it)
-        list_pair.push_back(pair_t(*it, 0));
+    createPair(list_pair, list);
     list.clear();
     list.reserve(list_pair.size());
     recursionMergeInsert(result, list_pair);

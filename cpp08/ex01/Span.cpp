@@ -1,5 +1,9 @@
 #include "Span.hpp"
 
+Span::Span():N(0)
+{
+}
+
 Span::Span(unsigned int N): N(N)
 {
     v.reserve(N);
@@ -23,6 +27,7 @@ Span &Span::operator=(const Span &other)
     }
     return *this;
 }
+
 void Span::addNumber(int n)
 {
     if (v.size() == N)

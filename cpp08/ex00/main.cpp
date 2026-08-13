@@ -20,7 +20,6 @@ int main()
         std::cerr << e.what() << '\n';
     }
 
-
     std::cout << "\033[33m" << "Test deque container\n"<< "\033[0m";
     std:: deque <int> d;
     for (int i = 1; i < 5; i++)

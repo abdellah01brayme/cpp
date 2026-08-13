@@ -7,6 +7,6 @@ typename T::iterator easyfind(T &ref, int n)
 {
     typename T:: iterator it = std::find(ref.begin(), ref.end(), n);
     if (it == ref.end())
-        throw std::runtime_error("value not found!");
+        throw std::runtime_error("not found!");
     return it;
 }

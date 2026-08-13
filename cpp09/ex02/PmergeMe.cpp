@@ -242,8 +242,7 @@ static void recursionMergeInsert(vect_pair_t &dst_list, vect_pair_t &src_list)
     creatJacobsthal(jacobsthal, list_pair.size());
     for (uint i = 0; i < list_pair.size(); i++)
     {
-        std :: cout << "add " << list_pair[jacobsthal[i]].second << "  added " ;
-        std:: cout << (*addPair(dst_list, src_list, list_pair[jacobsthal[i]], true)).first <<std::endl;
+        addPair(dst_list, src_list, list_pair[jacobsthal[i]], true);
     }
     if (src_list.size())
         addPair(dst_list, src_list, reversePair(src_list.front()));

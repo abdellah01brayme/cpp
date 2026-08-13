@@ -8,8 +8,8 @@ class Span
     private:
         unsigned int N;
         std::vector<int> v;
-        Span();
     public:
+        Span();
         Span(unsigned int N);
         Span(const Span &other);
         ~Span();

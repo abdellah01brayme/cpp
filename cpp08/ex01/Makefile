@@ -2,7 +2,7 @@ CC = c++
 
 FLAGS = -Wall -Wextra -Werror -std=c++98
 
-NAME = a.out
+NAME = Span
 
 SRCS = main.cpp  Span.cpp
 

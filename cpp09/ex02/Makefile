@@ -4,7 +4,7 @@ FLAGS = -Wall -Wextra -Werror -g -std=c++98
 
 NAME = PmergeMe
 
-SRCS = main.cpp PmergeMe.cpp 
+SRCS = main.cpp lab.cpp 
 
 OBJS = ${SRCS:%.cpp=%.o}
 

@@ -1,6 +1,6 @@
 #include "PmergeMe.hpp"
 
-bool checkArg(char *s)
+static bool checkArg(char *s)
 {
     if (!s[0])
         return false;
@@ -37,32 +37,35 @@ void parser(std::vector<uint> &v, char **av, int ac)
         throw std::runtime_error("Error: no numbers provided." );
 }
 
-void printPiar(std::vector<std::pair<uint, uint> > &pair)
+ pair_t reversePair(pair_t &pair)
 {
-    for (std::vector<std::pair<uint, uint> >::iterator it = pair.begin(); it != pair.end(); ++it)
-        std::cout << "[ " << (*it).first << " , " << (*it).second << "], ";
-    std::cout << std::endl;
+    uint tmp;
+    tmp = pair.first;
+    pair.first = pair.second;
+    pair.second = tmp;
+    return pair;
 }
 
-void print(std::vector<uint> &v)
+void printnode(t_node *node)
 {
-    for (std::vector<uint>::iterator it = v.begin(); it != v.end(); ++it)
-        std::cout << "  " << *it;
-    std::cout << "\n";
+    if (!node)
+        std::cout << "NULL";
+    else
+        std::cout << "[" << node->bigest << " " << node->lowest << "]  ";
 }
-
-void createPair(std::vector<std::pair<uint, uint> > &v, std::vector<std::pair<uint, uint> > &list_pair)
+void print(vect_pair_t &v)
 {
-    for (std::vector<std::pair<uint, uint> >::iterator it = v.begin(); it != v.end() && it + 1 != v.end() ; it += 2)
+    for (vect_pair_t::iterator it = v.begin(); it != v.end(); ++it)
     {
-        uint a = (*it).first;
-        uint b = (*(it + 1)).first;
-        std::pair<uint, uint> p(std::max(a, b), std::min(a, b));
-        list_pair.push_back(p);
+        printnode(&(*it));
+        std::cout << "-->  ";
+        printnode((*it).lowest_node);
+        std::cout << "\n";
     }
+    std::cout << "\n========\n";
 }
 
-void creatJacobsthal(std::vector<uint> &v, uint len)
+static void creatJacobsthal(std::vector<uint> &v, uint len)
 {
     uint i;
     uint end = 1;
@@ -80,93 +83,101 @@ void creatJacobsthal(std::vector<uint> &v, uint len)
         j2 = end;
     }
 }
-std::pair<uint, uint> findPair(std::vector<std::pair<uint, uint> > &v, uint first)
+
+void createPair(vect_pair_t &list_pair, std::vector<uint> &list)
 {
-    std::vector<std::pair<uint, uint> >::iterator it;
-    for (it = v.begin(); (*it).first != first; ++it)
-        ;
-    std::pair<uint, uint> pair(*it);
-    v.erase(it);
-    return pair;
+    for (std::vector<uint>::iterator it = list.begin(); it != list.end(); ++it)
+        list_pair.push_back((node){*it, 0, NULL, NULL});
 }
 
-struct CompareFirst {
-    bool operator()(const std::pair<uint, uint>& element, uint val) const {
-        return element.first < val;
-    }
-};
-
-std::vector<std::pair<uint, uint> >::iterator changeSecondPair(std::vector<std::pair<uint, uint> > &dst_list, std::vector<std::pair<uint, uint> > &src_list, uint first_pair)
+static void createPair(vect_pair_t &list_pair, vect_pair_t &v)
 {
-    std::vector<std::pair<uint, uint> >::iterator it ;
-    it = std::lower_bound(dst_list.begin(), dst_list.end(), first_pair, CompareFirst());
-    (*it).second = (findPair(src_list, first_pair)).second;
+    t_node node;
+    for (vect_pair_t::iterator it = v.begin(); it != v.end() && it + 1 != v.end() ; it += 2)
+    {
+        if ((*it).bigest > (*(it + 1)).bigest)
+        {
+            node.bigest = (*it).bigest;
+            node.lowest = (*(it + 1)).bigest;
+            node.bigest_node = &(*it);
+            node.lowest_node = &(*(it + 1));
+        }
+        else
+        {
+            node.bigest = (*(it + 1)).bigest;
+            node.lowest = (*it).bigest;
+            node.bigest_node = &(*(it + 1)); 
+            node.lowest_node = &(*it); 
+        }
+        list_pair.push_back(node);
+    }
+}
+
+static vect_pair_t::iterator changeOrigine(vect_pair_t &dst_list, t_node node)
+{
+    vect_pair_t::iterator it ;
+    it = std::lower_bound(dst_list.begin(), dst_list.end(), node.bigest, CompareFirst());
+    if ((*it).bigest_node)
+    {
+        (*it).bigest = (*it).bigest_node->bigest;
+        (*it).lowest = (*it).bigest_node->lowest;
+        (*it).lowest_node = (*it).bigest_node->lowest_node;
+        (*it).bigest_node = (*it).bigest_node->bigest_node;
+    }
     return it;
 }
 
-std::vector<std::pair<uint, uint> >::iterator addPair(std::vector<std::pair<uint, uint> > &dst_list, std::vector<std::pair<uint, uint> > &src_list, std::pair<uint, uint> pair, bool change_second = false)
+static vect_pair_t::iterator addPair(vect_pair_t &dst_list, vect_pair_t::iterator it_end, t_node &node)
 {
-    std::vector<std::pair<uint, uint> >::iterator it_end;
-    std::vector<std::pair<uint, uint> >::iterator it;
-    if (change_second)
-        it_end = changeSecondPair(dst_list, src_list, pair.first);
-    else
-        it_end = dst_list.end();
-    it = std::lower_bound(dst_list.begin(), it_end, pair.second, CompareFirst());
-    return dst_list.insert(it, findPair(src_list, pair.second));
+    vect_pair_t::iterator it;
+    it = std::lower_bound(dst_list.begin(), it_end, node.bigest, CompareFirst());
+    return dst_list.insert(it, node);
 }
-void recursionMergeInsert(std::vector<std::pair<uint, uint> > &dst_list, std::vector<std::pair<uint, uint> > &src_list)
-{
-    std::vector<std::pair<uint, uint> > tmp_list_pair;
 
-    createPair(src_list, tmp_list_pair);
-    if (tmp_list_pair.size() > 1)
-        recursionMergeInsert(dst_list, tmp_list_pair);
+static void recursionMergeInsert(vect_pair_t &dst_list, vect_pair_t &src_list)
+{
+    vect_pair_t list_pair;
+
+    createPair(list_pair, src_list);
+    if (list_pair.size() > 1)
+        recursionMergeInsert(dst_list, list_pair);
     else
     {
-        addPair(dst_list, src_list, tmp_list_pair[0]);
-        std::swap(tmp_list_pair.back().first, tmp_list_pair.back().second);
-        addPair(dst_list, src_list, tmp_list_pair[0]);
-        if (src_list.size())
-        {
-            std::pair<uint, uint> pair = src_list.back();
-            std::swap(pair.second, pair.first);
-            addPair(dst_list, src_list, pair);
-        }
+        dst_list.insert(dst_list.begin(), *list_pair.front().lowest_node);
+        if (src_list.front().bigest == dst_list.front().bigest)
+            dst_list.insert(dst_list.end(), *(src_list.begin() + 1));
+        else
+            dst_list.insert(dst_list.end(), src_list.front());
+        if (src_list.size() > 2)
+            addPair(dst_list, dst_list.end(), src_list.back());
         return ;
     }
-    tmp_list_pair = dst_list;
+    // print(dst_list);
+    list_pair = dst_list;
     std::vector <uint> jacobsthal;
-    creatJacobsthal(jacobsthal, tmp_list_pair.size());
-    for (uint i = 0; i < tmp_list_pair.size(); i++)
+    creatJacobsthal(jacobsthal, list_pair.size());
+    for (uint i = 0; i < list_pair.size(); i++)
     {
-        addPair(dst_list, src_list, tmp_list_pair[jacobsthal[i]], true);
+        vect_pair_t::iterator it_end = changeOrigine(dst_list, list_pair[jacobsthal[i]]);
+        addPair(dst_list, it_end, *(list_pair[jacobsthal[i]].lowest_node));
     }
-    if (src_list.size())
-    {
-        std::pair<uint, uint> pair = src_list.back();
-        std::swap(pair.second, pair.first);
-        addPair(dst_list, src_list, pair, 0);
-    }
-    // printPiar(dst_list);
+    if (src_list.size() > dst_list.size())
+        addPair(dst_list, dst_list.end(), src_list.back());
 }
-void mergeInsert(std::vector<uint> &v)
+
+void mergeInsert(std::vector<uint> &list)
 {
     // create a list of pair
-    if (v.size() < 2)
+    if (list.size() < 2)
         return ;
-    std::vector<std::pair<uint, uint> > v_pair;
-    std::vector<std::pair<uint, uint> > result;
-    for (std::vector<uint>::iterator it = v.begin(); it != v.end(); ++it)
-        v_pair.push_back(std::pair<uint, uint>(*it, 0));
-    v.clear();
-    v.reserve(v_pair.size());
-    recursionMergeInsert(result, v_pair);
-    std::vector<std::pair<uint, uint> >::iterator it;
+    vect_pair_t list_pair;
+    vect_pair_t result;
+    createPair(list_pair, list);
+    list.clear();
+    list.reserve(list_pair.size());
+    recursionMergeInsert(result, list_pair);
+    vect_pair_t::iterator it;
     for (it = result.begin(); it != result.end(); ++it)
-    {
-        std::cout << " " << (*it).first;
-        v.push_back((*it).first);
-    }
-    std::cout << "\n" ;
+        list.push_back((*it).bigest);
+
 }

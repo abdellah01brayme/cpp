@@ -9,14 +9,20 @@
 #include <utility>
 #include <ctime>
 
+typedef struct node{
+    uint            bigest;
+    uint            lowest;
+    struct node*    bigest_node;
+    struct node*    lowest_node;
+} t_node;
+
 typedef std::pair<uint, uint> pair_t;
-typedef std::vector<pair_t > vect_pair_t;
+typedef std::vector<t_node> vect_pair_t;
 typedef std::deque<pair_t > deque_pair_t;
 
-
 struct CompareFirst {
-    bool operator()(const pair_t& element, uint val) const {
-        return element.first < val;
+    bool operator()(const t_node& node, uint val) const {
+        return node.bigest < val;
     }
 };
 
